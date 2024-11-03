@@ -10,9 +10,12 @@
     <link rel="stylesheet" href="css/style.css">
     <script defer src="./todo-app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            createTodoApp(document.getElementById('todo-app'), 'Мои дела');
-        });
+    document.addEventListener('DOMContentLoaded', function () {
+        // Extracts the base name from the URL, e.g., "index" for index.html
+        const listName = window.location.pathname.split("/").pop().split(".")[0];
+        // Passes the list name to create a unique todo list for each page
+        createTodoApp(document.getElementById('todo-app'), 'Мои дела', listName || 'default');
+    });
     </script>
 </head>
 

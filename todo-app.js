@@ -2,15 +2,19 @@
 (function () {
     let todoItems = [];
 
-    function saveDataToLocalStorage(key, data) {
-        localStorage.setItem(key, JSON.stringify(data));
-    }
-
-
-    function loadDataFromLocalStorage(key) {
-        const data = localStorage.getItem(key);
-        return data ? JSON.parse(data) : [];
-    }
+    const toDoStorage = {
+        load(key) {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : [];
+        },
+        save(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
+            }
+        }
+    };
 
     function createAppTitle(title) {
         let appTitle = document.createElement('h2');
@@ -34,8 +38,7 @@
         button.disabled = true;
 
         buttonWrapper.append(button);
-        form.append(input);
-        form.append(buttonWrapper);
+        form.append(input, buttonWrapper);
 
         input.addEventListener('input', function () {
             button.disabled = !input.value.trim();
@@ -56,7 +59,7 @@
 
     }
 
-    function createTodoItem({ id, name, done }) {
+    function createTodoItem({ id, name, done }, localStorageKey) {
         let item = document.createElement('li');
         let buttonGroup = document.createElement('div');
         let doneButton = document.createElement('button');
@@ -84,7 +87,7 @@
             let todoItem = todoItems.find(todo => todo.id === id);
             if (todoItem) {
                 todoItem.done = !todoItem.done;
-                saveDataToLocalStorage(localStorageKey, todoItems);
+                toDoStorage.save(localStorageKey, todoItems);
             }
         });
 
@@ -93,7 +96,7 @@
             if (confirm('Точно?')) {
                 item.remove();
                 todoItems = todoItems.filter(todo => todo.id !== id);
-                saveDataToLocalStorage(localStorageKey, todoItems);
+                toDoStorage.save(localStorageKey, todoItems);
             }
         });
 
@@ -113,13 +116,13 @@
         let todoList = createTodoList();
 
         const localStorageKey = `todo-${listName}`;
-        todoItems = loadDataFromLocalStorage(localStorageKey);
+        todoItems = toDoStorage.load(localStorageKey);
 
         todoList.innerHTML = '';
 
 
         todoItems.forEach(item => {
-            let todoListItem = createTodoItem(item);
+            let todoListItem = createTodoItem(item, localStorageKey);
             todoList.append(todoListItem.item);
         });
 
@@ -144,7 +147,7 @@
 
             let todoListItem = createTodoItem(todoItem);
             todoList.append(todoListItem.item);
-            saveDataToLocalStorage(localStorageKey, todoItems);
+            toDoStorage.save(localStorageKey, todoItems);
 
             todoItemForm.input.value = '';
             todoItemForm.button.disabled = true;
